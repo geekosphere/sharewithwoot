@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Share with #woot</string>
+    <string name="action_settings">Settings</string>
+    <string name="preference_name_title">Your Name</string>
+    <string name="preference_name_summary">Setup your name please.</string>
+    <string name="title_activity_preferences">Preferences</string>
+    <string name="hello_world">Hello world!</string>
+
+</resources>
