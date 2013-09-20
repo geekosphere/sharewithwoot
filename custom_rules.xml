@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="custom_rules">
+    <target name="-pre-build">
+        <replace file="src/org/geekosphere/sharewithwoot/ShareActivity.java"
+            failOnNoReplacements="false"
+            token="ROFGNIKOOLERAUOYSDIORDEHTTON"
+            value="${hal_key}" />
+    </target>
+</project>
+
