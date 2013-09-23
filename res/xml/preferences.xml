@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <!--  sort-of ugly :( -->
+    <Preference android:key="KEY_PASTE" android:title="Share from clipboard" android:summary="Shares a Url from the clipboard." />
+    
     <EditTextPreference android:key="KEY_NAME" android:title="@string/preference_name_title" android:summary="@string/preference_name_summary"/>
 </PreferenceScreen>

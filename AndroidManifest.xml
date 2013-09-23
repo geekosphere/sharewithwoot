@@ -25,7 +25,7 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
-        <activity android:name="org.geekosphere.sharewithwoot.Preferences" >
+        <activity android:name="org.geekosphere.sharewithwoot.SharePreferences" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
