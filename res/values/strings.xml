@@ -8,4 +8,8 @@
     <string name="title_activity_preferences">Preferences</string>
     <string name="hello_world">Hello world!</string>
 
+    <string name="share_layout_text_url">URL:</string>
+    <string name="share_layout_text_custom_title">Custom Title:</string>
+    <string name="share_layout_text_custom_hint">custom text</string>
+    <string name="share_layout_button_share">share with #woot!</string>
 </resources>

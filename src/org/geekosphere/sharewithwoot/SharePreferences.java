@@ -34,7 +34,7 @@ public class SharePreferences extends PreferenceActivity implements OnPreference
             }
         }
         else {
-            android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+			android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 
             String url = clipboard.getText().toString();
             if (url.startsWith("http")) {

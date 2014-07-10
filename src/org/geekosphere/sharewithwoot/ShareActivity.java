@@ -1,14 +1,24 @@
 package org.geekosphere.sharewithwoot;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 import android.app.Activity;
 import android.content.Context;
@@ -17,92 +27,115 @@ import android.content.SharedPreferences;
 
 public class ShareActivity extends Activity {
 
-    private final static String HAL_HOST = "apoc.cc";
-    private final static int HAL_PORT = 7272;
-    private final static String HAL_KEY = "ROFGNIKOOLERAUOYSDIORDEHTTON";
-    private final static String HAL_CHANNEL = "#woot";
+	private static final String TAG = "ShareActivity";
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	private final static String HAL_URL = "http://hal.apoc.cc/dispatch";
+	private final static String HAL_USERNAME = "sharewithwoot";
+	private final static String HAL_PASSWORD = "ROFGNIKOOLERAUOYSDIORDEHTTON";
+	private final static String HAL_CHANNEL = "#woot";
 
-        Intent intent = getIntent();
-        if (savedInstanceState == null && intent != null) {
-            if (intent.getAction().equals(Intent.ACTION_SEND)) {
-                final String url = intent.getStringExtra(Intent.EXTRA_TEXT);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		Intent intent = getIntent();
+		final String url;
+		final String title;
+		if (savedInstanceState == null && intent != null) {
+			if (intent.getAction().equals(Intent.ACTION_SEND)) {
+				url = intent.getStringExtra(Intent.EXTRA_TEXT);
+				// might be empty
+				title = intent.getStringExtra(Intent.EXTRA_SUBJECT);
+			} else {
+				return;
+			}
+		} else {
+			return;
+		}
 
-                // might be empty
-                final String title = intent.getStringExtra(Intent.EXTRA_SUBJECT);
+		setContentView(R.layout.share);
+		final Button button = (Button) findViewById(R.id.buttonShare);
+		final EditText customText = (EditText) findViewById(R.id.editTitle);
+		button.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Log.v(TAG, "share button clicked!");
+				Thread thread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						shareWithWoot(url, title, customText.getText()
+								.toString());
+					}
+				});
+				thread.start();
+				finish();
+			}
+		});
+	}
 
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        shareWithWoot(url, title);
-                    }
-                });
-                thread.start();
-            }
-        }
+	private void shareWithWoot(String url, String title, String customText) {
+		SharedPreferences preferences = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		String name = preferences.getString("KEY_NAME", "changeme");
 
-        finish();
-    }
+		if (title != null && !title.equals(""))
+			customText += String.format(" (%s)", title);
 
-    private void shareWithWoot(String url, String title) {
-        StringBuilder packet = new StringBuilder();
+		final String message;
+		if (dispatchToHal(announceCommand(HAL_CHANNEL, name, url, customText))) {
+			message = "Successfully shared with " + HAL_CHANNEL + "!";
+		} else {
+			message = "An error occured, try again later!";
+		}
+		final Context context = this;
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+			}
+		});
+	}
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String name = preferences.getString("KEY_NAME", "changeme");
+	private String announceCommand(String channel, String name, String url,
+			String customText) {
+		return String.format("say %s \002%s just shared:\017 %s (%s)", channel,
+				name, url, customText);
+	}
 
-        packet.append(HAL_KEY);
-        packet.append("|");
-        packet.append(HAL_CHANNEL);
-        packet.append("|");
-        packet.append(String.format("\002%s just shared:\017 %s", name, url));
-        if (title != null && !title.equals(""))
-            packet.append(String.format(" (%s)", title));
+	private boolean dispatchToHal(String command) {
+		HttpClient httpclient = new DefaultHttpClient();
 
-        final String message; 
-        if (sendUdpString(packet.toString(), HAL_HOST, HAL_PORT)) {
-            message = "Successfully shared with " + HAL_CHANNEL + "!";
-        }
-        else {
-            message = "An error occured, try again later!";
-        }
-        final Context context = this;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-            }});
-    }
+		// Prepare a request object
+		HttpPost httppost = new HttpPost(HAL_URL);
 
-    private boolean sendUdpString(String message, String host, int port) {
-        byte[] rawBytes = message.getBytes();
-        DatagramSocket socket = null;
-        try {
-            socket = new DatagramSocket();
-            InetAddress local = InetAddress.getByName(host);
-            DatagramPacket packet = new DatagramPacket(rawBytes, rawBytes.length, local, port);
-            socket.send(packet);
-        }
-        catch (UnknownHostException e) {
-            e.printStackTrace();
-            return false;
-        }
-        catch (SocketException e) {
-            e.printStackTrace();
-            return false;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        finally {
-            if (socket != null) {
-                socket.close();
-            }
-        }
-        return true;
-    }
+		List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+		postParameters.add(new BasicNameValuePair("username", HAL_USERNAME));
+		postParameters.add(new BasicNameValuePair("password", HAL_PASSWORD));
+		postParameters.add(new BasicNameValuePair("command", command));
+
+		try {
+			httppost.setEntity(new UrlEncodedFormEntity(postParameters));
+		} catch (UnsupportedEncodingException e) {
+			Log.e(TAG,
+					"dispatchToHal: UnsupportedEncodingException: "
+							+ e.getMessage());
+			return false;
+		}
+
+		// Execute the request
+		HttpResponse response;
+		try {
+			response = httpclient.execute(httppost);
+			Log.v(TAG, "dispatchToHal: Response Status: "
+					+ response.getStatusLine().toString());
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				System.out.println(entity.getContent().toString());
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "dispatchToHal: Exception: " + e.getMessage());
+			return false;
+		}
+
+		return true;
+	}
 
 }
