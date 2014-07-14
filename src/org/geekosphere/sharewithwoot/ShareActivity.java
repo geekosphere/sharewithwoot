@@ -76,11 +76,9 @@ public class ShareActivity extends Activity {
 				.getDefaultSharedPreferences(this);
 		String name = preferences.getString("KEY_NAME", "changeme");
 
-		if (title != null && !title.equals(""))
-			customText += String.format(" (%s)", title);
-
 		final String message;
-		if (dispatchToHal(announceCommand(HAL_CHANNEL, name, url, customText))) {
+		if (dispatchToHal(announceCommand(HAL_CHANNEL, name, url, customText,
+				title))) {
 			message = "Successfully shared with " + HAL_CHANNEL + "!";
 		} else {
 			message = "An error occured, try again later!";
@@ -95,9 +93,18 @@ public class ShareActivity extends Activity {
 	}
 
 	private String announceCommand(String channel, String name, String url,
-			String customText) {
-		return String.format("say %s \002%s just shared:\017 %s (%s)", channel,
-				name, url, customText);
+			String customText, String title) {
+		String cmd = String.format("say %s \002%s just shared:\017 %s",
+				channel, name, url);
+
+		if (customText != null && !customText.equals("")) {
+			cmd += String.format(" - %s", customText);
+		}
+		if (title != null && !title.equals("")) {
+			cmd += String.format(" (%s)", title);
+		}
+
+		return cmd;
 	}
 
 	private boolean dispatchToHal(String command) {
