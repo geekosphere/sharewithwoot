@@ -27,7 +27,7 @@ public class SharePreferences extends PreferenceActivity implements
 		if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 			ClipData clipData = clipboard.getPrimaryClip();
-			if (clipData.getItemCount() > 0) {
+			if (clipData != null && clipData.getItemCount() > 0) {
 				ClipData.Item item = clipData.getItemAt(0);
 				CharSequence cs = item.getText();
 				if (cs != null)
