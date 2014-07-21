@@ -31,8 +31,8 @@ public class ShareActivity extends Activity {
 
 	private final static String HAL_URL = "http://hal.apoc.cc/dispatch";
 	private final static String HAL_USERNAME = "sharewithwoot";
-	private final static String HAL_PASSWORD = "LIOEKANS"; // "ROFGNIKOOLERAUOYSDIORDEHTTON";
-	private final static String HAL_CHANNEL = "#test"; // "#woot";
+	private final static String HAL_PASSWORD = "ROFGNIKOOLERAUOYSDIORDEHTTON";
+	private final static String HAL_CHANNEL = "#woot";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
